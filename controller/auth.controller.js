@@ -1,7 +1,15 @@
-import { bcrypt, jwt, User, sendSuccess, sendError, HTTP_STATUS, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../utils/import.js';
+import {
+    bcrypt,
+    jwt,
+    User,
+    sendSuccess,
+    sendError,
+    HTTP_STATUS,
+    ERROR_MESSAGES,
+    SUCCESS_MESSAGES,
+} from '../utils/import.js';
 
-
-//User Registration
+// Register User
 export const register = async(req, res) => {
     const { name, email, password, mobile, role } = req.body;
 
@@ -15,8 +23,8 @@ export const register = async(req, res) => {
             );
         }
 
-        // Validation for existing user
-        const existingUser = await User.findOne({ where: { email } });
+        // Check if user exists
+        const existingUser = await User.findOne({ email });
         if (existingUser) {
             return sendError(
                 res,
@@ -25,21 +33,23 @@ export const register = async(req, res) => {
             );
         }
 
-        // Hash password and create user
+        // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = await User.create({
+
+        // Create user
+        const newUser = new User({
             name,
             email,
             password: hashedPassword,
             mobile,
-            role
+            role,
         });
 
-        return sendSuccess(
-            res,
-            HTTP_STATUS.CREATED,
-            SUCCESS_MESSAGES.USER_REGISTERED, { userId: newUser.id }
-        );
+        await newUser.save();
+
+        return sendSuccess(res, HTTP_STATUS.CREATED, SUCCESS_MESSAGES.USER_REGISTERED, {
+            userId: newUser._id,
+        });
     } catch (err) {
         return sendError(
             res,
@@ -50,45 +60,44 @@ export const register = async(req, res) => {
     }
 };
 
-//login
+// Login User
 export const login = async(req, res) => {
     const { email, password } = req.body;
+
     try {
-        //validate fields
+        // Validate input
         if (!email || !password) {
             return sendError(res, HTTP_STATUS.BAD_REQUEST, ERROR_MESSAGES.REQUIRED_FIELDS);
         }
 
-        //check if user exists
-        const user = await User.findOne({ where: { email } });
+        // Check user existence
+        const user = await User.findOne({ email });
         if (!user) {
             return sendError(res, HTTP_STATUS.BAD_REQUEST, ERROR_MESSAGES.INVALID_CREDENTIALS);
         }
 
-        //match password
+        // Compare passwords
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return sendError(res, HTTP_STATUS.UNAUTHORIZED, ERROR_MESSAGES.INVALID_CREDENTIALS);
         }
 
-        //generate token
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-            expiresIn: "1hr"
-
+        // Generate JWT
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+            expiresIn: '1h',
         });
 
         return sendSuccess(res, HTTP_STATUS.OK, SUCCESS_MESSAGES.USER_LOGGED_IN, {
-            "user": {
-                id: user.id,
+            user: {
+                id: user._id,
                 name: user.name,
                 email: user.email,
                 mobile: user.mobile,
-                role: user.role
+                role: user.role,
             },
-            token: token
-        })
-    } catch (error) {
+            token,
+        });
+    } catch (err) {
         return sendError(res, HTTP_STATUS.SERVER_ERROR, ERROR_MESSAGES.SERVER_ERROR, err);
     }
-
 };

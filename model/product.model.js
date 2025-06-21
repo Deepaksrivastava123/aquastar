@@ -1,44 +1,39 @@
-import { DataTypes } from 'sequelize';
-import sequelize from '../config/db.js';
-import Subcategory from './subcategory.model.js';
+// models/Product.js
+import mongoose from 'mongoose';
 
-const Product = sequelize.define('Product', {
+const productSchema = new mongoose.Schema({
     subcategory_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: Subcategory,
-            key: 'id'
-        },
-        onDelete: 'CASCADE'
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Subcategory',
+        required: true
     },
     name: {
-        type: DataTypes.STRING(150),
-        allowNull: false
+        type: String,
+        required: true,
+        maxlength: 150
     },
     description: {
-        type: DataTypes.TEXT
+        type: String
     },
     price: {
-        type: DataTypes.DECIMAL(10, 2),
-        allowNull: false
+        type: mongoose.Schema.Types.Decimal128,
+        required: true
     },
     quantity: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0
+        type: Number,
+        default: 0
     },
     image_url: {
-        type: DataTypes.STRING
+        type: String
+    },
+    created_at: {
+        type: Date,
+        default: Date.now
     }
 }, {
-    tableName: 'products',
-    timestamps: true,
-    createdAt: 'created_at',
-    updatedAt: false
+    collection: 'products',
+    timestamps: false // disable updatedAt and createdAt; manually using created_at
 });
 
-// Associations
-Subcategory.hasMany(Product, { foreignKey: 'subcategory_id' });
-Product.belongsTo(Subcategory, { foreignKey: 'subcategory_id' });
-
+const Product = mongoose.model('Product', productSchema);
 export default Product;

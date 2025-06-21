@@ -1,7 +1,6 @@
 // Core Modules
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import sequelize from '../config/db.js';
 
 // Sequelize Models
 import User from '../model/user.model.js';
@@ -39,7 +38,6 @@ import subCategoryRoutes from '../route/subCategory.route.js';
 export {
     bcrypt,
     jwt,
-    sequelize,
 
     User,
     Category,

@@ -1,39 +1,33 @@
-import { DataTypes } from 'sequelize';
-import sequelize from '../config/db.js';
+// models/User.js
+import mongoose from 'mongoose';
 
-const User = sequelize.define('User', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-    },
+const userSchema = new mongoose.Schema({
     name: {
-        type: DataTypes.STRING,
-        allowNull: false,
+        type: String,
+        required: true,
     },
     email: {
-        type: DataTypes.STRING,
+        type: String,
         unique: true,
-        allowNull: false,
+        required: true,
     },
     mobile: {
-        type: DataTypes.STRING,
+        type: String,
         unique: true,
-        allowNull: false,
+        required: true,
     },
     password: {
-        type: DataTypes.STRING,
-        allowNull: false,
+        type: String,
+        required: true,
     },
     role: {
-        type: DataTypes.STRING,
-        allowNull: false, // ✅ required, no default
+        type: String,
+        required: true,
     },
-
 }, {
-    tableName: 'users',
-    timestamps: false, // prevent Sequelize from expecting createdAt/updatedAt
-    freezeTableName: true, // prevent Sequelize from pluralizing table name
+    collection: 'user', // 👈 Equivalent to freezeTableName
+    timestamps: false, // 👈 Matching Sequelize's timestamps: false
 });
 
+const User = mongoose.model('User', userSchema);
 export default User;

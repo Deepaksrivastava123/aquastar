@@ -1,33 +1,27 @@
-import { DataTypes } from 'sequelize';
-import sequelize from '../config/db.js';
-import Category from './category.model.js';
+// models/Subcategory.js
+import mongoose from 'mongoose';
 
-const Subcategory = sequelize.define('Subcategory', {
+const subcategorySchema = new mongoose.Schema({
     category_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: Category,
-            key: 'id'
-        },
-        onDelete: 'CASCADE'
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category',
+        required: true
     },
     name: {
-        type: DataTypes.STRING,
-        allowNull: false
+        type: String,
+        required: true
     },
     description: {
-        type: DataTypes.TEXT
+        type: String
+    },
+    created_at: {
+        type: Date,
+        default: Date.now
     }
 }, {
-    tableName: 'subcategories',
-    timestamps: true,
-    createdAt: 'created_at',
-    updatedAt: false
+    collection: 'subcategories',
+    timestamps: false // manually handling `created_at`
 });
 
-// Associations
-Category.hasMany(Subcategory, { foreignKey: 'category_id' });
-Subcategory.belongsTo(Category, { foreignKey: 'category_id' });
-
+const Subcategory = mongoose.model('Subcategory', subcategorySchema);
 export default Subcategory;
